@@ -1,0 +1,4 @@
+cd /path/to/your/local/Job-Scanner   # wherever you have the repo
+git add .
+git commit -m "Mobile PWA: fix storage bug, add offline support, iPhone home-screen install"
+git push origin main
