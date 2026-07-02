@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#F0EAD9"/>
+  <g fill="#E4A23A">
+    <rect x="0" y="0" width="30" height="20"/>
+    <rect x="60" y="0" width="30" height="20"/>
+    <rect x="120" y="0" width="30" height="20"/>
+    <rect x="180" y="0" width="30" height="20"/>
+    <rect x="240" y="0" width="30" height="20"/>
+    <rect x="300" y="0" width="30" height="20"/>
+    <rect x="360" y="0" width="30" height="20"/>
+    <rect x="420" y="0" width="30" height="20"/>
+  </g>
+  <rect x="24" y="24" width="464" height="464" rx="56" ry="56"
+        fill="none" stroke="#B6502E" stroke-width="14"/>
+  <circle cx="215" cy="215" r="120" fill="#FCF8EB"
+          stroke="#241F1A" stroke-width="26"/>
+  <line x1="305" y1="305" x2="400" y2="400"
+        stroke="#B6502E" stroke-width="32" stroke-linecap="round"/>
+  <text x="256" y="430" text-anchor="middle"
+        font-family="'IBM Plex Sans', 'Helvetica Neue', sans-serif"
+        font-size="100" font-weight="700" fill="#241F1A">JS</text>
+</svg>
