@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dispatch Board — Millwright &amp; RN Job Scanner</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root{
+    --paper: #F0EAD9;
+    --paper-dark: #E3D9BF;
+    --ink: #241F1A;
+    --ink-soft: #55503f;
+    --blueprint: #16273D;
+    --blueprint-line: rgba(255,255,255,0.07);
+    --rust: #B6502E;
+    --rust-dark: #8B3B20;
+    --teal: #3E7D6C;
+    --teal-dark: #2C5B4E;
+    --amber: #E4A23A;
+    --line: #C9BFA0;
+    --card-shadow: 0 3px 0 rgba(36,31,26,0.08), 0 8px 20px rgba(36,31,26,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(182,80,46,0.05), transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(62,125,108,0.06), transparent 45%);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  .wrap{ max-width: 1040px; margin: 0 auto; padding: 0 20px 64px; }
+
+  header.board{
+    background: var(--blueprint);
+    background-image:
+      repeating-linear-gradient(0deg, var(--blueprint-line) 0, var(--blueprint-line) 1px, transparent 1px, transparent 28px),
+      repeating-linear-gradient(90deg, var(--blueprint-line) 0, var(--blueprint-line) 1px, transparent 1px, transparent 28px);
+    color: #F4EFE2;
+    padding: 40px 24px 34px;
+    margin: 0 -20px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  header.board::after{
+    content:"";
+    position:absolute; left:0; right:0; bottom:0; height:8px;
+    background: repeating-linear-gradient(90deg, var(--amber) 0 18px, transparent 18px 36px);
+    opacity:0.85;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color: var(--amber);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif;
+    font-weight:700;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    font-size: clamp(28px, 5vw, 42px);
+    margin: 0 0 8px;
+    max-width: 660px;
+  }
+  header p.sub{
+    margin:0;
+    max-width: 580px;
+    color: #C9D2DE;
+    font-size:15px;
+    line-height:1.5;
+  }
+
+  .panel{
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+    margin-bottom: 28px;
+  }
+  .panel-row{ margin-bottom: 20px; }
+  .panel-row:last-child{ margin-bottom: 0; }
+  .label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display:block;
+    margin-bottom: 10px;
+  }
+
+  .switch{
+    display: inline-flex;
+    background: var(--paper-dark);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+    border: 1px solid var(--line);
+  }
+  .switch button{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600;
+    font-size: 13.5px;
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    padding: 10px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+    white-space: nowrap;
+  }
+  .switch button.active{
+    color: #fff;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.18);
+  }
+  .switch button[data-role="millwright"].active{ background: var(--rust); }
+  .switch button[data-role="rn"].active{ background: var(--teal); }
+  .switch button[data-role="both"].active{ background: var(--ink); }
+  .switch button:focus-visible{ outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  .loc-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  input[type="text"]{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 11px 14px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    min-width: 180px;
+    flex: 1 1 180px;
+  }
+  input[type="text"]:focus-visible{ outline: 2px solid var(--amber); outline-offset: 1px; }
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top: 12px; }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px dashed var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease;
+  }
+  .chip:hover, .chip:focus-visible{ border-color: var(--rust); color: var(--rust); outline:none; }
+  .chip.selected{ border-color: var(--ink); color: var(--ink); background: var(--paper-dark); }
+
+  .segmented{ display:inline-flex; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .segmented button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    padding:9px 14px;
+    border:none;
+    background: #fff;
+    color: var(--ink-soft);
+    cursor:pointer;
+    border-right:1px solid var(--line);
+  }
+  .segmented button:last-child{ border-right:none; }
+  .segmented button.active{ background: var(--ink); color:#fff; }
+  .segmented button:focus-visible{ outline: 2px solid var(--amber); outline-offset:-2px; }
+
+  .company-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 6px 8px 6px 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper);
+  }
+  .company-chip .url{ color: var(--ink-soft); font-size:11px; }
+  .company-chip button.remove{
+    border:none; background:transparent; color: var(--ink-soft);
+    cursor:pointer; font-size:15px; line-height:1; padding: 0 2px;
+  }
+  .company-chip button.remove:hover{ color: var(--rust); }
+
+  .add-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    font-weight:500;
+    color:#fff;
+    background: var(--ink);
+    border:none;
+    border-radius: 3px;
+    padding: 11px 18px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .add-btn:hover{ background: var(--rust-dark); }
+  .add-btn:focus-visible{ outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  .toggle-row{
+    display:flex; align-items:center; gap:8px; margin-top: 12px;
+    font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-soft);
+  }
+  .toggle-row input[type="checkbox"]{ width:16px; height:16px; accent-color: var(--rust); cursor:pointer; }
+
+  .run-btn{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    letter-spacing:.04em;
+    text-transform: uppercase;
+    font-size: 15px;
+    color: #fff;
+    background: var(--amber);
+    background-image: linear-gradient(180deg, #EAB55A, var(--amber));
+    border: none;
+    border-radius: 3px;
+    padding: 14px 28px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--rust-dark), 0 8px 16px rgba(139,59,32,0.25);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .run-btn:active{ transform: translateY(2px); box-shadow: 0 1px 0 var(--rust-dark); }
+  .run-btn:disabled{ opacity:.6; cursor:default; }
+  .run-btn:focus-visible{ outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .meta-line{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 14px;
+  }
+
+  .lanes{ display:grid; grid-template-columns: 1fr; gap: 24px; }
+  @media (min-width: 760px){
+    .lanes.two{ grid-template-columns: 1fr 1fr; }
+  }
+  .lane-title{
+    font-family:'Oswald', sans-serif;
+    font-weight:600;
+    text-transform: uppercase;
+    letter-spacing:.03em;
+    font-size: 17px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin: 0 0 14px;
+  }
+  .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .dot.millwright{ background: var(--rust); }
+  .dot.rn{ background: var(--teal); }
+  .count-pill{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    background: var(--paper-dark);
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+
+  .ticket{
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-left-width: 5px;
+    border-radius: 3px;
+    box-shadow: var(--card-shadow);
+    padding: 18px 18px 16px;
+    margin-bottom: 16px;
+    animation: rise .35s ease both;
+  }
+  .ticket.millwright{ border-left-color: var(--rust); }
+  .ticket.rn{ border-left-color: var(--teal); }
+  .ticket::before{
+    content:"";
+    position:absolute;
+    top:-1px; left:14px; right:14px; height:1px;
+    background-image: radial-gradient(circle, var(--paper) 2.5px, transparent 2.6px);
+    background-size: 12px 1px;
+    background-repeat: repeat-x;
+  }
+  .ticket-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .ticket-title{ font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:15.5px; line-height:1.3; margin:0 0 4px; }
+  .ticket-company{ font-size: 13.5px; color: var(--ink-soft); margin:0 0 10px; }
+  .stamp-group{ display:flex; gap:6px; flex-shrink:0; }
+  .stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    padding: 3px 7px;
+    transform: rotate(4deg);
+    white-space: nowrap;
+    height: fit-content;
+  }
+  .ticket.millwright .stamp{ color: var(--rust); }
+  .ticket.rn .stamp{ color: var(--teal); }
+  .stamp.watchlist{ color: var(--amber) !important; border-color: var(--amber); }
+
+  .ticket-fields{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    display:flex;
+    flex-wrap:wrap;
+    gap: 6px 16px;
+    margin-bottom: 10px;
+  }
+  .ticket-fields span b{ color: var(--ink); font-weight:500; }
+
+  .ticket-note{ font-size: 13.5px; color: var(--ink); line-height:1.45; margin: 0 0 12px; }
+
+  .ticket-actions{ display:flex; justify-content:space-between; align-items:center; gap: 10px; }
+  .ticket-link{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--blueprint);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+  }
+  .ticket-link:hover{ color: var(--rust); }
+
+  .track-btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .track-btn:hover{ border-color: var(--rust); color: var(--rust); }
+  .track-btn.tracked{ background: var(--ink); color:#fff; border-color: var(--ink); }
+  .track-btn:focus-visible{ outline: 2px solid var(--amber); outline-offset: 2px; }
+
+  .state-card{
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 28px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+  }
+  .state-card.error{ border-color: var(--rust); color: var(--rust-dark); background: rgba(182,80,46,0.05); }
+
+  .gauge{
+    width: 34px; height: 34px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    border: 3px solid var(--paper-dark);
+    border-top-color: var(--amber);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  @keyframes rise{ from{ opacity:0; transform: translateY(6px); } to{ opacity:1; transform: translateY(0); } }
+
+  @media (prefers-reduced-motion: reduce){
+    .ticket{ animation: none; }
+    .gauge{ animation: none; border-top-color: var(--paper-dark); }
+  }
+
+  /* Quick links (no API, no key) */
+  .qlink-group{ margin-bottom: 16px; }
+  .qlink-group:last-child{ margin-bottom: 0; }
+  .qlink-heading{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    display:flex; align-items:center; gap:8px;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .qlink-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .qlink{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .qlink:hover{ border-color: var(--rust); color: var(--rust); }
+  .qlink.company{ border-style: dashed; }
+
+  /* Tracked jobs */
+  .tracked-section{ margin-top: 40px; }
+  .tracked-section h2{
+    font-family:'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing:.03em;
+    font-size: 19px;
+    margin: 0 0 14px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .tracked-row{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    background:#fff; border:1px solid var(--line); border-left:4px solid var(--ink);
+    border-radius: 3px; padding: 12px 16px; margin-bottom: 10px;
+  }
+  .tracked-row.millwright{ border-left-color: var(--rust); }
+  .tracked-row.rn{ border-left-color: var(--teal); }
+  .tracked-main{ flex: 1 1 220px; }
+  .tracked-main .t-title{ font-weight:600; font-size:14px; margin:0 0 2px; }
+  .tracked-main .t-company{ font-size:12.5px; color: var(--ink-soft); margin:0; }
+  select.status-select{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .remove-track{ border:none; background:transparent; color: var(--ink-soft); cursor:pointer; font-size:17px; padding: 0 4px; }
+  .remove-track:hover{ color: var(--rust); }
+  .empty-tracked, .empty-companies{ color: var(--ink-soft); font-size: 13.5px; font-family:'IBM Plex Sans', sans-serif; margin: 0; }
+
+  footer.note{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    text-align:center;
+    margin-top: 36px;
+    line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="board">
+    <p class="eyebrow">Job Dispatch — No AI Required</p>
+    <h1>The Dispatch Board</h1>
+    <p class="sub">Millwright and RN openings near wherever you're standing. Live results run on a free job-search API (Adzuna) — no Claude, no tokens. Quick links below work with zero setup at all.</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-row">
+      <span class="label">Role</span>
+      <div class="switch" id="roleSwitch">
+        <button data-role="millwright" class="active">Millwright</button>
+        <button data-role="rn">Registered Nurse</button>
+        <button data-role="both">Both</button>
+      </div>
+    </div>
+
+    <div class="panel-row">
+      <span class="label">Location</span>
+      <div class="loc-row">
+        <input type="text" id="locationInput" value="Exeter, ON" aria-label="Search location" />
+        <div class="segmented" id="radiusSwitch" role="group" aria-label="Search radius">
+          <button data-radius="25" class="active">25 km</button>
+          <button data-radius="50">50 km</button>
+          <button data-radius="100">100 km</button>
+          <button data-radius="anywhere">Anywhere in ON</button>
+        </div>
+      </div>
+      <div class="chips" id="townChips">
+        <button class="chip selected" data-town="Exeter, ON">Exeter</button>
+        <button class="chip" data-town="Grand Bend, ON">Grand Bend</button>
+        <button class="chip" data-town="Clinton, ON">Clinton</button>
+        <button class="chip" data-town="Goderich, ON">Goderich</button>
+        <button class="chip" data-town="Seaforth, ON">Seaforth</button>
+        <button class="chip" data-town="Stratford, ON">Stratford</button>
+        <button class="chip" data-town="St. Marys, ON">St. Marys</button>
+        <button class="chip" data-town="Woodstock, ON">Woodstock</button>
+        <button class="chip" data-town="London, ON">London</button>
+      </div>
+    </div>
+
+    <div class="panel-row">
+      <span class="label">Companies to watch</span>
+      <div class="loc-row">
+        <input type="text" id="companyNameInput" placeholder="Company name (e.g. Amazon)" />
+        <input type="text" id="companyUrlInput" placeholder="Career site (optional)" />
+        <button class="add-btn" id="addCompanyBtn">Add company</button>
+      </div>
+      <div class="chips" id="companyChips"></div>
+      <div class="meta-line">Matches from these employers get flagged in live results, and each one gets its own direct link in Quick Links below.</div>
+    </div>
+
+    <div class="panel-row">
+      <span class="label">Live search key (free, one-time — not from Anthropic)</span>
+      <div class="loc-row">
+        <input type="text" id="adzunaIdInput" placeholder="Adzuna App ID" />
+        <input type="text" id="adzunaKeyInput" placeholder="Adzuna App Key" />
+        <button class="add-btn" id="saveCredsBtn">Save key</button>
+      </div>
+      <div class="meta-line" id="credsStatus">No key saved yet.</div>
+    </div>
+
+    <div class="panel-row" style="margin-bottom:0;">
+      <button class="run-btn" id="runBtn">Run Live Scan</button>
+      <div class="meta-line" id="metaLine">Not scanned yet.</div>
+    </div>
+  </div>
+
+  <div class="lanes" id="lanes"></div>
+
+  <div class="panel" id="quickLinksPanel" style="margin-top:24px;">
+    <span class="label">Quick links — open directly, no key or lookup needed</span>
+    <div id="quickLinks"></div>
+  </div>
+
+  <div class="tracked-section">
+    <h2>Tracked Jobs <span class="count-pill" id="trackedCount">0</span></h2>
+    <div id="trackedList"></div>
+  </div>
+
+  <footer class="note">Live results come from Adzuna's free job-search API using your own key — nothing here calls Claude or uses any AI tokens. Your watchlist, key, and tracked jobs are saved inside this file. Postings close fast, so confirm details on the source page before applying.</footer>
+</div>
+
+<script>
+  const ROLE_DEFS = {
+    millwright: {
+      label: "Millwright",
+      query: "millwright",
+      searchLabel: "millwright"
+    },
+    rn: {
+      label: "Registered Nurse",
+      query: "registered nurse",
+      searchLabel: "registered nurse"
+    }
+  };
+
+  let companyIdSeed = 1;
+
+  let state = {
+    role: "millwright",
+    location: "Exeter, ON",
+    radius: "25",
+    results: {},
+    loading: {},
+    errors: {},
+    watchlist: [],
+    tracked: [],
+    adzunaCreds: null
+  };
+
+  const roleSwitch = document.getElementById('roleSwitch');
+  const radiusSwitch = document.getElementById('radiusSwitch');
+  const townChips = document.getElementById('townChips');
+  const locationInput = document.getElementById('locationInput');
+  const runBtn = document.getElementById('runBtn');
+  const metaLine = document.getElementById('metaLine');
+  const lanesEl = document.getElementById('lanes');
+  const companyChipsEl = document.getElementById('companyChips');
+  const companyNameInput = document.getElementById('companyNameInput');
+  const companyUrlInput = document.getElementById('companyUrlInput');
+  const trackedListEl = document.getElementById('trackedList');
+  const trackedCountEl = document.getElementById('trackedCount');
+  const quickLinksEl = document.getElementById('quickLinks');
+  const credsStatusEl = document.getElementById('credsStatus');
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function escapeAttr(str){ return escapeHtml(str); }
+
+  /* ---------- Role / location / radius controls ---------- */
+  roleSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    [...roleSwitch.children].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.role = btn.dataset.role;
+    renderLanes();
+    renderQuickLinks();
+  });
+
+  radiusSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    [...radiusSwitch.children].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.radius = btn.dataset.radius;
+  });
+
+  townChips.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    [...townChips.children].forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    locationInput.value = btn.dataset.town;
+    state.location = btn.dataset.town;
+    renderQuickLinks();
+  });
+
+  locationInput.addEventListener('input', () => {
+    state.location = locationInput.value.trim();
+    [...townChips.children].forEach(b => b.classList.toggle('selected', b.dataset.town === state.location));
+    renderQuickLinks();
+  });
+
+  /* ---------- Watchlist storage ---------- */
+  function defaultWatchlist(){
+    return [
+      { id: companyIdSeed++, name: 'Amazon', url: 'amazon.jobs' },
+      { id: companyIdSeed++, name: 'UPS', url: 'ups.com/careers' },
+      { id: companyIdSeed++, name: 'CN Rail', url: 'cn.ca/en/careers' },
+      { id: companyIdSeed++, name: 'UHN', url: 'uhn.ca/careers' },
+      { id: companyIdSeed++, name: 'SickKids', url: 'sickkids.ca/Careers' },
+      { id: companyIdSeed++, name: 'County of Huron', url: 'huroncounty.ca/careers' }
+    ];
+  }
+
+  async function loadWatchlist(){
+    try{
+      const res = await window.storage.get('watchlist-companies', false);
+      if(res && res.value){
+        state.watchlist = JSON.parse(res.value);
+        const maxId = state.watchlist.reduce((m, c) => Math.max(m, c.id || 0), 0);
+        companyIdSeed = maxId + 1;
+        return;
+      }
+    }catch(e){ /* no saved list yet */ }
+    state.watchlist = defaultWatchlist();
+  }
+
+  async function saveWatchlist(){
+    try{
+      await window.storage.set('watchlist-companies', JSON.stringify(state.watchlist), false);
+    }catch(e){ console.error('Storage error saving watchlist', e); }
+  }
+
+  function renderWatchlist(){
+    if(!state.watchlist.length){
+      companyChipsEl.innerHTML = '<p class="empty-companies">No companies added yet — add one above.</p>';
+      return;
+    }
+    companyChipsEl.innerHTML = state.watchlist.map(c => `
+      <span class="company-chip">
+        ${escapeHtml(c.name)}${c.url ? `<span class="url">· ${escapeHtml(c.url)}</span>` : ''}
+        <button class="remove" data-id="${c.id}" aria-label="Remove ${escapeAttr(c.name)}">×</button>
+      </span>
+    `).join('');
+  }
+
+  document.getElementById('addCompanyBtn').addEventListener('click', () => {
+    const name = companyNameInput.value.trim();
+    const url = companyUrlInput.value.trim();
+    if(!name) return;
+    state.watchlist.push({ id: companyIdSeed++, name, url });
+    companyNameInput.value = '';
+    companyUrlInput.value = '';
+    saveWatchlist();
+    renderWatchlist();
+    renderQuickLinks();
+  });
+
+  companyChipsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.remove');
+    if(!btn) return;
+    const id = Number(btn.dataset.id);
+    state.watchlist = state.watchlist.filter(c => c.id !== id);
+    saveWatchlist();
+    renderWatchlist();
+    renderQuickLinks();
+  });
+
+  /* ---------- Adzuna credentials ---------- */
+  async function loadAdzunaCreds(){
+    try{
+      const res = await window.storage.get('adzuna-creds', false);
+      state.adzunaCreds = res && res.value ? JSON.parse(res.value) : null;
+    }catch(e){
+      state.adzunaCreds = null;
+    }
+  }
+  async function saveAdzunaCreds(){
+    try{
+      await window.storage.set('adzuna-creds', JSON.stringify(state.adzunaCreds), false);
+    }catch(e){ console.error('Storage error saving Adzuna key', e); }
+  }
+  function renderCredsStatus(){
+    if(state.adzunaCreds && state.adzunaCreds.app_id){
+      credsStatusEl.textContent = `Live search enabled (App ID starts with ${state.adzunaCreds.app_id.slice(0,4)}…). Hit Run Live Scan below.`;
+    }else{
+      credsStatusEl.textContent = 'No key saved yet — register free at developer.adzuna.com to get an App ID and App Key, or just use Quick Links below.';
+    }
+  }
+  document.getElementById('saveCredsBtn').addEventListener('click', () => {
+    const id = document.getElementById('adzunaIdInput').value.trim();
+    const key = document.getElementById('adzunaKeyInput').value.trim();
+    if(!id || !key) return;
+    state.adzunaCreds = { app_id: id, app_key: key };
+    saveAdzunaCreds();
+    document.getElementById('adzunaIdInput').value = '';
+    document.getElementById('adzunaKeyInput').value = '';
+    renderCredsStatus();
+  });
+
+  /* ---------- Tracked jobs storage ---------- */
+  async function loadTracked(){
+    try{
+      const res = await window.storage.get('tracked-jobs', false);
+      state.tracked = res && res.value ? JSON.parse(res.value) : [];
+    }catch(e){
+      state.tracked = [];
+    }
+  }
+  async function saveTracked(){
+    try{
+      await window.storage.set('tracked-jobs', JSON.stringify(state.tracked), false);
+    }catch(e){ console.error('Storage error saving tracked jobs', e); }
+  }
+
+  function jobKey(job){
+    return [(job.title||'').trim().toLowerCase(), (job.company||'').trim().toLowerCase(), (job.url||'').trim().toLowerCase()].join('|');
+  }
+  function isTracked(key){ return state.tracked.some(t => t.key === key); }
+
+  function toggleTrack(roleKey, job){
+    const key = jobKey(job);
+    const idx = state.tracked.findIndex(t => t.key === key);
+    if(idx > -1){
+      state.tracked.splice(idx, 1);
+    }else{
+      state.tracked.unshift({
+        key,
+        title: job.title || 'Untitled role',
+        company: job.company || 'Unknown employer',
+        location: job.location || '',
+        pay: job.pay || null,
+        url: job.url || '',
+        note: job.note || '',
+        role: roleKey,
+        status: 'Interested',
+        addedAt: Date.now()
+      });
+    }
+    saveTracked();
+    renderLanes();
+    renderTracked();
+  }
+
+  function renderTracked(){
+    trackedCountEl.textContent = state.tracked.length;
+    if(!state.tracked.length){
+      trackedListEl.innerHTML = '<p class="empty-tracked">Nothing tracked yet — hit "+ Track" on any posting to pin it here.</p>';
+      return;
+    }
+    trackedListEl.innerHTML = state.tracked.map(t => `
+      <div class="tracked-row ${t.role}">
+        <div class="tracked-main">
+          <p class="t-title">${escapeHtml(t.title)}</p>
+          <p class="t-company">${escapeHtml(t.company)}${t.location ? ' · ' + escapeHtml(t.location) : ''}</p>
+        </div>
+        <select class="status-select" data-key="${escapeAttr(t.key)}" aria-label="Status for ${escapeAttr(t.title)}">
+          ${['Interested','Applied','Interview','Offer','Rejected'].map(s => `<option value="${s}" ${t.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        ${t.url ? `<a class="ticket-link" href="${escapeAttr(t.url)}" target="_blank" rel="noopener noreferrer">View →</a>` : ''}
+        <button class="remove-track" data-key="${escapeAttr(t.key)}" aria-label="Remove tracked job">×</button>
+      </div>
+    `).join('');
+  }
+
+  trackedListEl.addEventListener('change', (e) => {
+    const sel = e.target.closest('select.status-select');
+    if(!sel) return;
+    const item = state.tracked.find(t => t.key === sel.dataset.key);
+    if(item){ item.status = sel.value; saveTracked(); }
+  });
+
+  trackedListEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.remove-track');
+    if(!btn) return;
+    state.tracked = state.tracked.filter(t => t.key !== btn.dataset.key);
+    saveTracked();
+    renderTracked();
+    renderLanes();
+  });
+
+  /* ---------- Adzuna live search ---------- */
+  function formatSalary(min, max){
+    const fmt = n => n ? `$${Math.round(n).toLocaleString()}` : '';
+    if(min && max && Math.round(min) !== Math.round(max)) return `${fmt(min)}–${fmt(max)}`;
+    return fmt(min || max) || null;
+  }
+
+  function stripHtml(str){
+    return String(str || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  function tagWatchlist(jobs){
+    if(!state.watchlist.length) return jobs;
+    const names = state.watchlist.map(c => c.name.trim().toLowerCase()).filter(Boolean);
+    jobs.forEach(j => {
+      const comp = (j.company || '').toLowerCase();
+      j.watchlisted = names.some(n => comp.includes(n) || (n.length > 3 && n.includes(comp)));
+    });
+    jobs.sort((a, b) => (b.watchlisted ? 1 : 0) - (a.watchlisted ? 1 : 0));
+    return jobs;
+  }
+
+  async function fetchAdzuna(roleKey, location, radius){
+    if(!state.adzunaCreds || !state.adzunaCreds.app_id || !state.adzunaCreds.app_key){
+      throw new Error('No Adzuna key saved yet — add one above or use Quick Links below.');
+    }
+    const def = ROLE_DEFS[roleKey];
+    const params = new URLSearchParams({
+      app_id: state.adzunaCreds.app_id,
+      app_key: state.adzunaCreds.app_key,
+      what: def.query,
+      results_per_page: '15',
+      'content-type': 'application/json'
+    });
+    if(radius === 'anywhere'){
+      params.set('where', 'Ontario');
+    }else{
+      params.set('where', location || 'Ontario');
+      params.set('distance', radius);
+    }
+
+    const url = `https://api.adzuna.com/v1/api/jobs/ca/search/1?${params.toString()}`;
+    let res;
+    try{
+      res = await fetch(url);
+    }catch(networkErr){
+      throw new Error('Network request failed — check your connection and try again.');
+    }
+
+    let data;
+    try{
+      data = await res.json();
+    }catch(e){
+      throw new Error(`Adzuna returned an unreadable response (status ${res.status}).`);
+    }
+
+    if(!res.ok){
+      const msg = (data && (data.exception || data.display)) || `HTTP ${res.status}`;
+      throw new Error(`Adzuna error — ${msg}. Double-check your App ID and App Key.`);
+    }
+
+    const jobs = (data.results || []).map(j => ({
+      title: stripHtml(j.title) || 'Untitled role',
+      company: (j.company && j.company.display_name) || 'Unknown employer',
+      location: (j.location && j.location.display_name) || location,
+      pay: formatSalary(j.salary_min, j.salary_max),
+      url: j.redirect_url || '',
+      note: stripHtml(j.description).slice(0, 140),
+      watchlisted: false
+    }));
+
+    return tagWatchlist(jobs);
+  }
+
+  /* ---------- Quick links (no API needed) ---------- */
+  function boardLinks(query, location){
+    const q = encodeURIComponent(query);
+    const loc = encodeURIComponent(location || 'Ontario');
+    return [
+      { label: 'Job Bank Canada', url: `https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=${q}&locationstring=${loc}` },
+      { label: 'Indeed', url: `https://ca.indeed.com/jobs?q=${q}&l=${loc}` },
+      { label: 'ZipRecruiter', url: `https://www.ziprecruiter.com/candidate/search?search=${q}&location=${loc}` },
+      { label: 'Glassdoor', url: `https://www.glassdoor.ca/Job/jobs.htm?sc.keyword=${q}&locKeyword=${loc}` },
+      { label: 'Eluta', url: `https://www.eluta.ca/search?q=${q}&l=${loc}` }
+    ];
+  }
+
+  function companyLinks(location){
+    return state.watchlist.map(c => {
+      let url;
+      if(c.url){
+        url = /^https?:\/\//i.test(c.url) ? c.url : `https://${c.url}`;
+      }else{
+        url = `https://www.google.com/search?q=${encodeURIComponent(c.name + ' careers ' + location)}`;
+      }
+      return { label: c.name, url };
+    });
+  }
+
+  function renderQuickLinks(){
+    const activeRoles = state.role === 'both' ? ['millwright', 'rn'] : [state.role];
+    const loc = state.location || 'Ontario';
+    let html = '';
+    activeRoles.forEach(roleKey => {
+      const links = boardLinks(ROLE_DEFS[roleKey].searchLabel, loc);
+      html += `<div class="qlink-group">
+        <p class="qlink-heading"><span class="dot ${roleKey}"></span>${ROLE_DEFS[roleKey].label} boards</p>
+        <div class="qlink-row">${links.map(l => `<a class="qlink" href="${escapeAttr(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)}</a>`).join('')}</div>
+      </div>`;
+    });
+    const cLinks = companyLinks(loc);
+    if(cLinks.length){
+      html += `<div class="qlink-group">
+        <p class="qlink-heading">Watchlisted employers</p>
+        <div class="qlink-row">${cLinks.map(l => `<a class="qlink company" href="${escapeAttr(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)}</a>`).join('')}</div>
+      </div>`;
+    }
+    quickLinksEl.innerHTML = html;
+  }
+
+  /* ---------- Ticket rendering ---------- */
+  function laneHeader(roleKey, count){
+    const def = ROLE_DEFS[roleKey];
+    return `<div class="lane-title">
+      <span class="dot ${roleKey}"></span> ${def.label}
+      <span class="count-pill">${count} match${count === 1 ? '' : 'es'}</span>
+    </div>`;
+  }
+
+  function ticketHtml(roleKey, job, idx){
+    const key = jobKey(job);
+    const tracked = isTracked(key);
+    const pay = job.pay ? `<span><b>PAY</b> ${escapeHtml(job.pay)}</span>` : '';
+    return `<div class="ticket ${roleKey}">
+      <div class="ticket-top">
+        <div>
+          <p class="ticket-title">${escapeHtml(job.title || 'Untitled role')}</p>
+          <p class="ticket-company">${escapeHtml(job.company || 'Unknown employer')}</p>
+        </div>
+        <div class="stamp-group">
+          ${job.watchlisted ? '<span class="stamp watchlist">Watchlist</span>' : ''}
+          <span class="stamp">${roleKey === 'rn' ? 'RN' : 'MWT'}</span>
+        </div>
+      </div>
+      <div class="ticket-fields">
+        <span><b>LOC</b> ${escapeHtml(job.location || '—')}</span>
+        ${pay}
+      </div>
+      ${job.note ? `<p class="ticket-note">${escapeHtml(job.note)}</p>` : ''}
+      <div class="ticket-actions">
+        ${job.url ? `<a class="ticket-link" href="${escapeAttr(job.url)}" target="_blank" rel="noopener noreferrer">View posting →</a>` : '<span></span>'}
+        <button class="track-btn ${tracked ? 'tracked' : ''}" data-role="${roleKey}" data-idx="${idx}">${tracked ? '✓ Tracked' : '+ Track'}</button>
+      </div>
+    </div>`;
+  }
+
+  function renderLanes(){
+    const activeRoles = state.role === 'both' ? ['millwright', 'rn'] : [state.role];
+    lanesEl.className = 'lanes' + (activeRoles.length === 2 ? ' two' : '');
+    lanesEl.innerHTML = activeRoles.map(roleKey => {
+      const isLoading = state.loading[roleKey];
+      const error = state.errors[roleKey];
+      const results = state.results[roleKey];
+
+      let body;
+      if(isLoading){
+        body = `<div class="state-card"><div class="gauge"></div>Scanning postings for ${ROLE_DEFS[roleKey].label.toLowerCase()} roles…</div>`;
+      } else if(error){
+        body = `<div class="state-card error">${escapeHtml(error)}</div>`;
+      } else if(!results){
+        body = `<div class="state-card">No scan run yet for this lane. Hit "Run Live Scan" above, or use Quick Links below.</div>`;
+      } else if(results.length === 0){
+        body = `<div class="state-card">No matches turned up for this location and radius. Try widening the radius or picking a nearby town.</div>`;
+      } else {
+        body = results.map((job, idx) => ticketHtml(roleKey, job, idx)).join('');
+      }
+
+      return `<div class="lane">
+        ${laneHeader(roleKey, results ? results.length : 0)}
+        ${body}
+      </div>`;
+    }).join('');
+  }
+
+  lanesEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.track-btn');
+    if(!btn) return;
+    const roleKey = btn.dataset.role;
+    const idx = Number(btn.dataset.idx);
+    const job = state.results[roleKey][idx];
+    toggleTrack(roleKey, job);
+  });
+
+  async function runScan(){
+    if(!state.adzunaCreds || !state.adzunaCreds.app_id){
+      metaLine.textContent = 'Add a free Adzuna key above to run a live scan — or use Quick Links below, no key needed.';
+      return;
+    }
+    if(!state.location){
+      metaLine.textContent = "Enter a location first.";
+      return;
+    }
+    const activeRoles = state.role === 'both' ? ['millwright', 'rn'] : [state.role];
+    runBtn.disabled = true;
+    metaLine.textContent = `Scanning ${activeRoles.map(r => ROLE_DEFS[r].label).join(' + ')} near ${state.location}…`;
+
+    activeRoles.forEach(r => { state.loading[r] = true; state.errors[r] = null; });
+    renderLanes();
+
+    await Promise.all(activeRoles.map(async (roleKey) => {
+      try{
+        const jobs = await fetchAdzuna(roleKey, state.location, state.radius);
+        state.results[roleKey] = jobs;
+      }catch(err){
+        state.errors[roleKey] = err.message || 'Something went wrong.';
+      }finally{
+        state.loading[roleKey] = false;
+        renderLanes();
+      }
+    }));
+
+    const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    metaLine.textContent = `Last scanned ${stamp} · ${state.location} · ${state.radius === 'anywhere' ? 'anywhere in ON' : state.radius + ' km radius'}`;
+    runBtn.disabled = false;
+  }
+
+  runBtn.addEventListener('click', runScan);
+
+  /* ---------- Init ---------- */
+  (async function init(){
+    await loadWatchlist();
+    await loadTracked();
+    await loadAdzunaCreds();
+    renderWatchlist();
+    renderTracked();
+    renderCredsStatus();
+    renderLanes();
+    renderQuickLinks();
+  })();
+</script>
+</body>
+</html>
